@@ -5,6 +5,7 @@ import socket
 import logging
 import hashlib
 import threading
+import shutil
 from queue import Queue, Empty
 from typing import Dict, Any
 
@@ -83,6 +84,16 @@ def make_screenshot_driver(use_tor: bool = True) -> webdriver.Firefox:
     if HEADLESS:
         opts.add_argument("-headless")
     
+    # Auto-detect Firefox binary path on Linux/Ubuntu (including Snap installations)
+    firefox_path = os.environ.get("FIREFOX_BIN") or shutil.which("firefox") or shutil.which("firefox-esr")
+    if not firefox_path:
+        for p in ["/usr/bin/firefox", "/snap/bin/firefox", "/usr/lib/firefox/firefox"]:
+            if os.path.exists(p):
+                firefox_path = p
+                break
+    if firefox_path:
+        opts.binary_location = firefox_path
+
     # Configure user-agent in Firefox preferences
     opts.set_preference("general.useragent.override", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/115.0")
     
