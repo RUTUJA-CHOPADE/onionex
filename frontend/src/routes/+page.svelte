@@ -33,6 +33,7 @@
 	let cacheBuster = $state(Date.now());
 	let screenshotState = $state({ running: false, queue_size: 0 });
 
+	/** @type {HTMLDivElement | null} */
 	let logsTerminal = $state(null);
 
 	// ═══ DERIVED VALUES (Svelte 5 Runes) ═══
@@ -809,7 +810,7 @@
 																<select
 																	class="status-select-indicator {isOnline ? 'online' : 'offline'}"
 																	value={u.status === 'Online' || u.status === 'Up' ? 'Online' : 'Offline'}
-																	onchange={(e) => updateLocationStatus(ent.key, u.url, e.target.value)}
+																	onchange={(e) => updateLocationStatus(ent.key, u.url, e.currentTarget.value)}
 																>
 																	<option value="Online">🟢 Up</option>
 																	<option value="Offline">🔴 Down</option>
@@ -861,7 +862,7 @@
 																		<input
 																			type="checkbox"
 																			checked={u.analyst_working}
-																			onchange={(e) => updateAnalystNotes(ent.key, u.url, e.target.checked, u.analyst_notes)}
+																			onchange={(e) => updateAnalystNotes(ent.key, u.url, e.currentTarget.checked, u.analyst_notes)}
 																		/>
 																		<span>Verified Working</span>
 																	</label>
@@ -870,7 +871,7 @@
 																		value={u.analyst_notes}
 																		placeholder="Notes (e.g. Captcha, DDOS)"
 																		class="analyst-notes-input"
-																		onchange={(e) => updateAnalystNotes(ent.key, u.url, u.analyst_working, e.target.value)}
+																		onchange={(e) => updateAnalystNotes(ent.key, u.url, u.analyst_working, e.currentTarget.value)}
 																	/>
 																</div>
 															{/if}

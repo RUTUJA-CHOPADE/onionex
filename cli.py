@@ -22,7 +22,7 @@ def serve():
     log.info("=" * 60)
     log.info("🧅 OnionExplorer — Threat Intelligence System")
     log.info("  Backend REST API : http://127.0.0.1:5000")
-    log.info("  Frontend Console : http://localhost:5173")
+    log.info("  Frontend Console : http://onionexplorer.local")
     log.info("=" * 60)
 
     try:
@@ -44,7 +44,7 @@ def serve():
                 stderr=subprocess.DEVNULL,
                 preexec_fn=None if os.name == 'nt' else os.setsid
             )
-            log.info("✨ SvelteKit Dev Server started on port 5173.")
+            log.info("✨ SvelteKit Dev Server started on port 80 (http://onionexplorer.local).")
         except Exception as err:
             log.error(f"❌ Failed to launch SvelteKit dev server: {err}")
 
@@ -62,7 +62,7 @@ def serve():
         time.sleep(2.5)
         log.info("🌐 Automatically opening OnionExplorer dashboard in your browser...")
         import webbrowser
-        webbrowser.open("http://localhost:5173")
+        webbrowser.open("http://onionexplorer.local")
 
     threading.Thread(target=auto_open_browser, daemon=True).start()
     

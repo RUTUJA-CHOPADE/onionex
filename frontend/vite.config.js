@@ -1,27 +1,16 @@
-import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [
-		sveltekit({
-			compilerOptions: {
-				// Force runes mode for the project, except for libraries.
-				runes: ({ filename }) =>
-					filename.split(/[/\\]/).includes('node_modules')
-						? undefined
-						: true
-			},
-
-			adapter: adapter()
-		})
+		sveltekit()
 	],
 
 	server: {
-		host: '127.0.0.1',
-		port: 5173,
+		host: '0.0.0.0',
+		port: 80,
 
-		allowedHosts: ['onionexplorer.local'],
+		allowedHosts: true,
 
 		proxy: {
 			'/api': {
