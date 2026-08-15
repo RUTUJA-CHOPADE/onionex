@@ -72,9 +72,18 @@ def serve():
     # Auto-open dashboard in default browser after SvelteKit initializes
     def auto_open_browser():
         time.sleep(2.5)
+        
+        # Skip auto-opening if running in a headless Linux/Ubuntu environment (e.g., SSH session)
+        if os.name != 'nt' and not os.environ.get("DISPLAY") and not os.environ.get("WAYLAND_DISPLAY"):
+            log.info("🖥️ Headless Linux environment detected (no DISPLAY). Skipping browser auto-open.")
+            return
+
         log.info("🌐 Automatically opening OnionExplorer dashboard in your browser...")
         import webbrowser
-        webbrowser.open(f"http://{frontend_domain}:{frontend_port}")
+        try:
+            webbrowser.open(f"http://{frontend_domain}:{frontend_port}")
+        except Exception as err:
+            log.warning(f"Could not open web browser: {err}")
 
     threading.Thread(target=auto_open_browser, daemon=True).start()
     
