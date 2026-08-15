@@ -1096,6 +1096,7 @@ def api_screenshot_check():
         return jsonify({"error": "Telegram links cannot be screenshot verified."}), 400
 
     queue_url_for_screenshot(entity_key, url, force=True)
+    start_screenshot_worker()
     return jsonify({"status": "queued"})
 
 
@@ -1133,6 +1134,8 @@ def api_screenshot_scan_all_online():
                 queued_count += 1
                 
     log.info(f"⚡ [Scan All Online] Queued {queued_count} online URLs alphabetically for screenshot check.")
+    if queued_count > 0:
+        start_screenshot_worker()
     return jsonify({"status": "queued", "count": queued_count})
 
 

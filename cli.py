@@ -19,10 +19,17 @@ import logging
 
 def serve():
     log = logging.getLogger("OnionExplorer")
+    
+    backend_host = os.environ.get("HOST", "0.0.0.0")
+    backend_port = os.environ.get("PORT", "5000")
+    frontend_host = os.environ.get("FRONTEND_HOST", "0.0.0.0")
+    frontend_port = os.environ.get("FRONTEND_PORT", "5173")
+    frontend_domain = os.environ.get("FRONTEND_DOMAIN", "localhost")
+
     log.info("=" * 60)
     log.info("🧅 OnionExplorer — Threat Intelligence System")
-    log.info("  Backend REST API : http://127.0.0.1:5000")
-    log.info("  Frontend Console : http://onionexplorer.local")
+    log.info(f"  Backend REST API : http://{backend_host}:{backend_port}")
+    log.info(f"  Frontend Console : http://{frontend_domain}:{frontend_port}")
     log.info("=" * 60)
 
     try:
@@ -35,25 +42,30 @@ def serve():
     def start_frontend():
         nonlocal frontend_proc
         try:
-            # Use shell=True to support both windows npm.cmd and linux npm
-            frontend_proc = subprocess.Popen(
-                "npm run dev",
-                shell=True,
-                cwd="frontend",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                preexec_fn=None if os.name == 'nt' else os.setsid
-            )
-            log.info("✨ SvelteKit Dev Server started on port 80 (http://onionexplorer.local).")
+            # We redirect SvelteKit stdout/stderr to a log file for transparency
+            os.makedirs(os.path.join("data", "logs"), exist_ok=True)
+            frontend_log_path = os.path.join("data", "logs", "frontend.log")
+            
+            with open(frontend_log_path, "a", encoding="utf-8") as f_log:
+                f_log.write(f"\n--- Starting SvelteKit Dev Server at {time.strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+                frontend_proc = subprocess.Popen(
+                    "npm run dev",
+                    shell=True,
+                    cwd="frontend",
+                    stdout=f_log,
+                    stderr=f_log,
+                    preexec_fn=None if os.name == 'nt' else os.setsid
+                )
+            log.info(f"✨ SvelteKit Dev Server started on port {frontend_port} (http://{frontend_domain}:{frontend_port}).")
+            log.info(f"  💡 Subprocess logs are saved in data/logs/frontend.log")
         except Exception as err:
             log.error(f"❌ Failed to launch SvelteKit dev server: {err}")
 
     t = threading.Thread(target=start_frontend, daemon=True)
     t.start()
 
-    # Register logging callback and start background screenshot worker
+    # Register logging callback for the screenshot worker (does not auto-start thread)
     register_log_callback(add_log_entry)
-    start_screenshot_worker()
 
     start_background_scraper()
     
@@ -62,12 +74,12 @@ def serve():
         time.sleep(2.5)
         log.info("🌐 Automatically opening OnionExplorer dashboard in your browser...")
         import webbrowser
-        webbrowser.open("http://onionexplorer.local")
+        webbrowser.open(f"http://{frontend_domain}:{frontend_port}")
 
     threading.Thread(target=auto_open_browser, daemon=True).start()
     
     try:
-        app.run(debug=False, host="0.0.0.0", port=5000)
+        app.run(debug=False, host=backend_host, port=int(backend_port))
     finally:
         # Gracefully stop screenshot worker thread
         stop_screenshot_worker()
